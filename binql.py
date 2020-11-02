@@ -4,6 +4,7 @@ import platform
 
 import logger
 import numpy as np
+import binlib
 import clonelib
 
 from typing import List, Dict
@@ -13,8 +14,6 @@ if __name__ == '__main__':
     targets: List[Path] = []
     dataset: Dict[str, Path] = {}
     train_dir: Path = None
-    dll_dir: Path = None
-    so_dir: Path = None
 
     # Setup ArgumentParser()
     parser = argparse.ArgumentParser()
@@ -30,8 +29,6 @@ if __name__ == '__main__':
     parser.add_argument(
         "--train", help="Directory of training functions", default="dataset/train"
     )
-    parser.add_argument("--dll", help="Directory of DLLs")
-    parser.add_argument("--so", help="Directory of SOs")
 
     args = parser.parse_args()
 
@@ -56,32 +53,10 @@ if __name__ == '__main__':
     if not train_dir.exists():
         raise Exception(f"Directory not found: {str(train_dir)}")
 
-    if args.format == "PE":
-        if args.dll:
-            dll_dir = Path(args.dll).resolve()
-            if not dll_dir.exists():
-                raise Exception(f"Directory not found: {str(dll_dir)}")
-        else:
-            if os == "Linux":
-                raise Exception(
-                    f"Argument missing: directory of DLL repository")
-            elif os == "Windows":
-                so_dir = find_system_dll_space()
+    # Disassemble all binaries in training_dir
+    DANGER_FUNCTIONS = [""]
+    
+    
 
-        dataset.update({"train": train_dir, "library": dll_dir})
-
-    elif args.format == "ELF":
-        if args.so:
-            so_dir = Path(args.so).resolve()
-            if not so_dir.exists():
-                raise Exception(f"Directory not found: {str(so_dir)}")
-        else:
-            if os == "Linux" and not args.so:
-                so_dir = find_system_so_space()
-            if os == "Windows" and not args.so:
-                raise Exception(
-                    f"Argument missing: directory of SO repository")
-
-        dataset.update({"train": train_dir, "library": so_dir})
-
-    clonelib.train(dataset["train"])
+    
+    

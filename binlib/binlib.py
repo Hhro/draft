@@ -1,6 +1,6 @@
 import os
 import pefile
-from typing import Tuple
+from typing import Tuple, Dict, Set, List
 from pathlib import Path
 from capstone import Cs, CS_ARCH_X86, CS_MODE_64
 
@@ -9,6 +9,9 @@ def is_PE(f: bytes): return f[:2] == b"MZ"
 def is_ELF(f: bytes): return f[:4] == b"\x7fELF"
 def MiB_size(f: bytes): return round(len(f)/(1024**2), 3)
 
+def is_direct_call(operands: str):
+    return operands.startswith("0x")
+        
 def is_jxx(opcode: str):
     if opcode.startswith("j"):
         return True
@@ -44,8 +47,8 @@ class PE(Binary):
         self._fformat: str = binary._fformat
         self._pefile: pefile.PE = pefile.PE(data=self._raw)
         self._iat: Dict[bytes, pefile.ImportData] = None
-        self._eat: Dict[bytes, pefile.ExportData] = None
         self._funcs: Dict[str, Tuple[int, int]] = None
+        self._xref: Dict[str, Set[str]] = None
 
         self._pefile.parse_data_directories()
     
@@ -54,6 +57,12 @@ class PE(Binary):
     
     def funcs(self):
         return self._funcs
+    
+    def iat(self):
+        if self._iat == None:
+            self.parse_iat()
+            
+        return self._iat
 
     def disassemble(self, output: Path = None):
         eop = self._pefile.OPTIONAL_HEADER.AddressOfEntryPoint
@@ -65,6 +74,8 @@ class PE(Binary):
         md = Cs(CS_ARCH_X86, CS_MODE_64)
 
         self._funcs = {}
+        self._xref = {}
+
         in_function = False
         is_oneline = False
         fnc_name = None
@@ -99,10 +110,19 @@ class PE(Binary):
                     if opcode == "jmp" or opcode == "ret":
                         is_oneline = True
             
+            if opcode == "call":
+                if is_direct_call(operands):
+                    callee = operands.split()[0]
+                else:
+                    callee = operands
+                if callee not in self._xref.keys():
+                    self._xref.update({callee: {fnc_name}})
+                else:
+                    self._xref[callee].add(fnc_name)
+                    
+                    
         if output:
             output.write_text(disassembled)
-        else:
-            print(disassembled)
 
     def parse_iat(self):
         self._iat = {}
@@ -113,18 +133,14 @@ class PE(Binary):
                 )
         except:
             return
+    
+    def xref(self, callees: List[str]):
+        res = set()
 
-    def parse_eat(self):
-        self._eat = {}
-        try:
-            for entry in self._pefile.DIRECTORY_ENTRY_EXPORT.symbols:
-                self._eat.update(
-                    {
-                        entry.name: entry
-                    }
-                )
-        except:
-            return
+        for callee in callees:
+            res.add(self._xref[callee])
+        
+        return res
 
     def dump(self):
         print(f"[i] Dump of {self._comm}")
@@ -133,16 +149,22 @@ class PE(Binary):
 
         if self._iat == None:
             self.parse_iat()
+        
+        if self._funcs == None:
+            self.disassemble()
+
         print(f"IAT: ")
         for dll in self._iat.keys():
             print(f" {dll}")
             for func in self._iat[dll]:
                 print(f"  |--- {hex(func.address)} {func.name}")
+        
+        print(f"XREF: ")
+        for callee in self._xref.keys():
+            print(f" {callee}")
+            for func in self._xref[callee]:
+                print(f"  |--- {func}")
 
-        if self._eat == None:
-            self.parse_eat()
-        print(f"EAT: ")
-        for dll in self._eat.keys():
-            print(f" {dll}")
-            for func in self._eat[dll]:
-                print(f"  |--- {hex(func.address)} {func.name}")
+if __name__ == "__main__":
+    x = PE(Binary(Path("tests/pe.exe")))
+    x.dump()
