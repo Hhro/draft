@@ -1,4 +1,5 @@
 import os
+import re
 import pefile
 from typing import Tuple, Dict, Set, List
 from pathlib import Path
@@ -9,18 +10,24 @@ def is_PE(f: bytes): return f[:2] == b"MZ"
 def is_ELF(f: bytes): return f[:4] == b"\x7fELF"
 def MiB_size(f: bytes): return round(len(f)/(1024**2), 3)
 
+
 def is_direct_call(operands: str):
     return operands.startswith("0x")
-        
+
+
 def is_jxx(opcode: str):
     if opcode.startswith("j"):
         return True
 
-def is_prolog(opcode: str, operands: str, raw: bytes):
-    prolog_ops=['lea', 'xor', 'sub', 'jmp', 'ret', 'mov', 'push', 'cmp']
 
-    if opcode in prolog_ops: return True     #wrapper
-    else: return False 
+def is_prolog(opcode: str, operands: str, raw: bytes):
+    prolog_ops = ['lea', 'xor', 'sub', 'jmp', 'ret', 'mov', 'push', 'cmp']
+
+    if opcode in prolog_ops:
+        return True  # wrapper
+    else:
+        return False
+
 
 class Binary:
     def __init__(self, path: Path):
@@ -51,17 +58,17 @@ class PE(Binary):
         self._xref: Dict[str, Set[str]] = None
 
         self._pefile.parse_data_directories()
-    
+
     def __len__(self):
         return len(self._raw)
-    
+
     def funcs(self):
         return self._funcs
-    
+
     def iat(self):
         if self._iat == None:
             self.parse_iat()
-            
+
         return self._iat
 
     def disassemble(self, output: Path = None):
@@ -89,16 +96,39 @@ class PE(Binary):
             operands = insn.op_str
             raw = insn.bytes
 
-            #Function usually begins with 'prolog' or 
-            #in case of wrapper, it simply begins with 'jmp'.
-            if in_function:                
+            if opcode == "call":
+                if is_direct_call(operands):
+                    callee = operands.split()[0]
+                else:
+                    entry_pattern = re.compile(
+                        "qword ptr \[rip \+ (0[xX][0-9a-fA-F]+)\]")
+                    entry_addr = re.match(entry_pattern, operands).group(1)
+
+                    try:
+                        callee = (
+                            self._iat[(addr + 6) + int(entry_addr, 16)][0]).decode()
+                    except:
+                        callee = (addr + 6) + int(entry_addr, 16)
+
+                if callee not in self._xref.keys():
+                    self._xref.update({callee: {fnc_name}})
+                else:
+                    self._xref[callee].add(fnc_name)
+
+            # Function usually begins with 'prolog' or
+            # in case of wrapper, it simply begins with 'jmp'.
+
+            if in_function:
                 if opcode == "int3" or is_oneline:
                     in_function = False
                     is_oneline = False
                     fnc_end = addr
                     self._funcs.update({fnc_name: (fnc_st, fnc_end)})
                 else:
-                    disassembled += f"\t{opcode}\t{operands}\n"
+                    if opcode == "call":
+                        disassembled += f"\t{opcode}\t{callee}\n"
+                    else:
+                        disassembled += f"\t{opcode}\t{operands}\n"
 
             if not in_function:
                 if is_prolog(opcode, operands, raw):
@@ -109,18 +139,7 @@ class PE(Binary):
 
                     if opcode == "jmp" or opcode == "ret":
                         is_oneline = True
-            
-            if opcode == "call":
-                if is_direct_call(operands):
-                    callee = operands.split()[0]
-                else:
-                    callee = operands
-                if callee not in self._xref.keys():
-                    self._xref.update({callee: {fnc_name}})
-                else:
-                    self._xref[callee].add(fnc_name)
-                    
-                    
+
         if output:
             output.write_text(disassembled)
 
@@ -129,17 +148,18 @@ class PE(Binary):
         try:
             for entry in self._pefile.DIRECTORY_ENTRY_IMPORT:
                 self._iat.update(
-                    {entry.dll: [imp for imp in entry.imports]}
+                    {imp.address: (imp.name, entry.dll)
+                     for imp in entry.imports}
                 )
         except:
             return
-    
+
     def xref(self, callees: List[str]):
         res = set()
 
         for callee in callees:
             res.add(self._xref[callee])
-        
+
         return res
 
     def dump(self):
@@ -149,22 +169,24 @@ class PE(Binary):
 
         if self._iat == None:
             self.parse_iat()
-        
+
         if self._funcs == None:
             self.disassemble()
 
         print(f"IAT: ")
-        for dll in self._iat.keys():
-            print(f" {dll}")
-            for func in self._iat[dll]:
-                print(f"  |--- {hex(func.address)} {func.name}")
-        
+        for addr in self._iat.keys():
+            print(f"{hex(addr)} {self._iat[addr][0]} {self._iat[addr][1]}")
+        print()
+
         print(f"XREF: ")
         for callee in self._xref.keys():
             print(f" {callee}")
             for func in self._xref[callee]:
                 print(f"  |--- {func}")
 
+
 if __name__ == "__main__":
     x = PE(Binary(Path("tests/pe.exe")))
-    x.dump()
+    x.parse_iat()
+    x.disassemble(output=Path("tests/pe.s"))
+    # x.dump()

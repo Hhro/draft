@@ -411,7 +411,7 @@ sub_1400117b0:
 	mov	r8, qword ptr [rbp + 0xe8]
 	mov	rdx, qword ptr [rbp + 0xe0]
 	mov	rcx, qword ptr [rax]
-	call	qword ptr [rip + 0xeadc]
+	call	__stdio_common_vfprintf
 	lea	rsp, [rbp + 0xc8]
 	pop	rdi
 	pop	rbp
@@ -429,20 +429,20 @@ sub_140011850:
 	call	0x140011087
 	mov	edx, 1
 	mov	ecx, 0x1f
-	call	qword ptr [rip + 0xea6e]
+	call	calloc
 	mov	qword ptr [rbp + 8], rax
 	cmp	qword ptr [rbp + 8], 0
 	jne	0x14001189c
 	mov	eax, 0xffffffff
 	jmp	0x1400118d5
 	lea	rcx, [rip + 0x8385]
-	call	qword ptr [rip + 0xea5f]
+	call	puts
 	xor	ecx, ecx
-	call	qword ptr [rip + 0xea67]
+	call	__acrt_iob_func
 	mov	r8, rax
 	mov	edx, 0x1f
 	mov	rcx, qword ptr [rbp + 8]
-	call	qword ptr [rip + 0xea4d]
+	call	fgets
 	mov	rdx, qword ptr [rbp + 8]
 	lea	rcx, [rip + 0x837a]
 	call	0x1400111db
@@ -473,7 +473,7 @@ sub_140011910:
 	lea	rax, [rbp + 0x128]
 	mov	qword ptr [rbp + 0x28], rax
 	mov	ecx, 1
-	call	qword ptr [rip + 0xe99c]
+	call	__acrt_iob_func
 	mov	r9, qword ptr [rbp + 0x28]
 	xor	r8d, r8d
 	mov	rdx, qword ptr [rbp + 0x120]
@@ -666,7 +666,7 @@ sub_140011cf0:
 	je	0x140011d27
 	cmp	dword ptr [rip + 0xabe6], 0
 	je	0x140011d27
-	call	qword ptr [rip + 0xe36a]
+	call	GetCurrentThreadId
 	cmp	dword ptr [rip + 0xabd8], eax
 	jne	0x140011d27
 	nop	
@@ -880,7 +880,7 @@ sub_140012050:
 	mov	edx, 2
 	xor	ecx, ecx
 	mov	rax, qword ptr [rsp + 0x50]
-	call	qword ptr [rip + 0xfeda]
+	call	5368848416
 	call	0x140011230
 	mov	qword ptr [rsp + 0x38], rax
 	mov	rax, qword ptr [rsp + 0x38]
@@ -1242,7 +1242,7 @@ sub_140012860:
 	xor	edx, edx
 	mov	qword ptr [rsp + 0xea8], rsi
 	mov	ecx, 0xfde9
-	call	qword ptr [rip + 0xd741]
+	call	MultiByteToWideChar
 	movsxd	rcx, eax
 	cmp	rcx, 0x200
 	jae	0x140012916
@@ -1253,7 +1253,7 @@ sub_140012860:
 	xor	edx, edx
 	mov	qword ptr [rsp + 0x20], rax
 	mov	ecx, 0xfde9
-	call	qword ptr [rip + 0xd70e]
+	call	MultiByteToWideChar
 	lea	rsi, [rsp + 0xa90]
 	test	eax, eax
 	jne	0x14001291d
@@ -1278,7 +1278,7 @@ sub_140012860:
 	je	0x140012a94
 	test	al, al
 	je	0x14001296e
-	call	qword ptr [rip + 0xd6a2]
+	call	IsDebuggerPresent
 	test	eax, eax
 	jne	0x140012a94
 	lea	rax, [rsp + 0x260]
@@ -1309,7 +1309,7 @@ sub_140012860:
 	mov	qword ptr [rsp + 0x20], rax
 	xor	edx, edx
 	mov	ecx, 0xfde9
-	call	qword ptr [rip + 0xd617]
+	call	WideCharToMultiByte
 	mov	qword ptr [rsp + 0x38], r13
 	lea	rbx, [rsp + 0x470]
 	test	eax, eax
@@ -1323,7 +1323,7 @@ sub_140012860:
 	mov	r9d, 0xffffffff
 	lea	rdi, [rip + 0x771b]
 	mov	ecx, 0xfde9
-	call	qword ptr [rip + 0xd5c8]
+	call	WideCharToMultiByte
 	mov	qword ptr [rsp + 0x30], r15
 	lea	r9, [rsp + 0x780]
 	test	eax, eax
@@ -1335,7 +1335,7 @@ sub_140012860:
 	mov	rax, r14
 	mov	r8d, dword ptr [rsp + 0x40]
 	mov	ecx, r12d
-	call	qword ptr [rip + 0xf591]
+	call	5368848416
 	cmp	eax, 1
 	jne	0x140012a95
 sub_140012a95:
@@ -1358,7 +1358,7 @@ sub_140012b60:
 	xor	edx, edx
 	lea	r8d, [rdx + 5]
 	mov	ecx, 0x406d1388
-	call	qword ptr [rip + 0xd498]
+	call	RaiseException
 	jmp	0x140012b7a
 	add	rsp, 0x28
 	ret	
@@ -1486,13 +1486,13 @@ sub_140012e00:
 	mov	qword ptr [rsp + 8], rcx
 	sub	rsp, 0x28
 	xor	ecx, ecx
-	call	qword ptr [rip + 0xd2af]
+	call	SetUnhandledExceptionFilter
 	mov	rcx, qword ptr [rsp + 0x30]
-	call	qword ptr [rip + 0xd2ac]
-	call	qword ptr [rip + 0xd296]
+	call	UnhandledExceptionFilter
+	call	GetCurrentProcess
 	mov	edx, 0xc0000409
 	mov	rcx, rax
-	call	qword ptr [rip + 0xd280]
+	call	TerminateProcess
 	add	rsp, 0x28
 	ret	
 sub_140012e50:
@@ -1637,14 +1637,14 @@ sub_1400131b0:
 	mov	qword ptr [rsp + 8], rcx
 	sub	rsp, 0x78
 	mov	rcx, qword ptr [rsp + 0x80]
-	call	qword ptr [rip + 0xce61]
+	call	RtlCaptureContext
 	mov	rax, qword ptr [rsp + 0x80]
 	mov	rax, qword ptr [rax + 0xf8]
 	mov	qword ptr [rsp + 0x48], rax
 	xor	r8d, r8d
 	lea	rdx, [rsp + 0x50]
 	mov	rcx, qword ptr [rsp + 0x48]
-	call	qword ptr [rip + 0xce42]
+	call	RtlLookupFunctionEntry
 	mov	qword ptr [rsp + 0x40], rax
 	cmp	qword ptr [rsp + 0x40], 0
 	je	0x14001323c
@@ -1659,14 +1659,14 @@ sub_1400131b0:
 	mov	r8, qword ptr [rsp + 0x48]
 	mov	rdx, qword ptr [rsp + 0x50]
 	xor	ecx, ecx
-	call	qword ptr [rip + 0xcdfc]
+	call	RtlVirtualUnwind
 	add	rsp, 0x78
 	ret	
 sub_140013270:
 	mov	qword ptr [rsp + 8], rcx
 	sub	rsp, 0x78
 	mov	rcx, qword ptr [rsp + 0x80]
-	call	qword ptr [rip + 0xcda1]
+	call	RtlCaptureContext
 	mov	rax, qword ptr [rsp + 0x80]
 	mov	rax, qword ptr [rax + 0xf8]
 	mov	qword ptr [rsp + 0x50], rax
@@ -1680,7 +1680,7 @@ sub_140013270:
 	xor	r8d, r8d
 	lea	rdx, [rsp + 0x58]
 	mov	rcx, qword ptr [rsp + 0x50]
-	call	qword ptr [rip + 0xcd67]
+	call	RtlLookupFunctionEntry
 	mov	qword ptr [rsp + 0x48], rax
 	cmp	qword ptr [rsp + 0x48], 0
 	je	0x140013319
@@ -1695,7 +1695,7 @@ sub_140013270:
 	mov	r8, qword ptr [rsp + 0x50]
 	mov	rdx, qword ptr [rsp + 0x58]
 	xor	ecx, ecx
-	call	qword ptr [rip + 0xcd21]
+	call	RtlVirtualUnwind
 	jmp	0x14001331b
 	jmp	0x14001331d
 	jmp	0x1400132a5
@@ -1896,7 +1896,7 @@ sub_140013660:
 	xor	edx, edx
 	mov	rcx, qword ptr [rsp + 0x40]
 	mov	rax, qword ptr [rsp + 0x28]
-	call	qword ptr [rip + 0xe96e]
+	call	5368848416
 	mov	rdx, qword ptr [rsp + 0x68]
 	mov	ecx, dword ptr [rsp + 0x60]
 	call	0x1400111c7
@@ -2157,23 +2157,23 @@ sub_140013b70:
 	mov	ecx, 8
 	rep stosb	byte ptr [rdi], al
 	lea	rcx, [rsp + 0x28]
-	call	qword ptr [rip + 0xc4fe]
+	call	GetSystemTimeAsFileTime
 	mov	rax, qword ptr [rsp + 0x28]
 	mov	qword ptr [rsp + 0x20], rax
-	call	qword ptr [rip + 0xc4e6]
+	call	GetCurrentThreadId
 	mov	eax, eax
 	mov	rcx, qword ptr [rsp + 0x20]
 	xor	rcx, rax
 	mov	rax, rcx
 	mov	qword ptr [rsp + 0x20], rax
-	call	qword ptr [rip + 0xc4de]
+	call	GetCurrentProcessId
 	mov	eax, eax
 	mov	rcx, qword ptr [rsp + 0x20]
 	xor	rcx, rax
 	mov	rax, rcx
 	mov	qword ptr [rsp + 0x20], rax
 	lea	rcx, [rsp + 0x30]
-	call	qword ptr [rip + 0xc4c9]
+	call	QueryPerformanceCounter
 	mov	eax, dword ptr [rsp + 0x30]
 	shl	rax, 0x20
 	xor	rax, qword ptr [rsp + 0x30]
@@ -2240,7 +2240,7 @@ sub_140013d50:
 sub_140013d60:
 	sub	rsp, 0x28
 	lea	rcx, [rip + 0x8b15]
-	call	qword ptr [rip + 0xc28f]
+	call	InitializeSListHead
 	add	rsp, 0x28
 	ret	
 sub_140013d80:
@@ -2316,13 +2316,13 @@ sub_140013eb0:
 	mov	ecx, 0x4d0
 	rep stosb	byte ptr [rdi], al
 	lea	rcx, [rsp + 0x120]
-	call	qword ptr [rip + 0xc127]
+	call	RtlCaptureContext
 	mov	rax, qword ptr [rsp + 0x218]
 	mov	qword ptr [rsp + 0x50], rax
 	xor	r8d, r8d
 	lea	rdx, [rsp + 0x58]
 	mov	rcx, qword ptr [rsp + 0x50]
-	call	qword ptr [rip + 0xc10f]
+	call	RtlLookupFunctionEntry
 	mov	qword ptr [rsp + 0x48], rax
 	cmp	qword ptr [rsp + 0x48], 0
 	je	0x140013f6f
@@ -2337,7 +2337,7 @@ sub_140013eb0:
 	mov	r8, qword ptr [rsp + 0x50]
 	mov	rdx, qword ptr [rsp + 0x58]
 	xor	ecx, ecx
-	call	qword ptr [rip + 0xc0c9]
+	call	RtlVirtualUnwind
 	mov	rax, qword ptr [rsp + 0x5f8]
 	mov	qword ptr [rsp + 0x218], rax
 	lea	rax, [rsp + 0x5f8]
@@ -2352,7 +2352,7 @@ sub_140013eb0:
 	mov	dword ptr [rsp + 0x84], 1
 	mov	rax, qword ptr [rsp + 0x5f8]
 	mov	qword ptr [rsp + 0x90], rax
-	call	qword ptr [rip + 0xc035]
+	call	IsDebuggerPresent
 	cmp	eax, 1
 	jne	0x140013fdf
 	mov	byte ptr [rsp + 0x40], 1
@@ -2365,9 +2365,9 @@ sub_140013eb0:
 	lea	rax, [rsp + 0x120]
 	mov	qword ptr [rsp + 0x68], rax
 	xor	ecx, ecx
-	call	qword ptr [rip + 0xc0b1]
+	call	SetUnhandledExceptionFilter
 	lea	rcx, [rsp + 0x60]
-	call	qword ptr [rip + 0xc0ae]
+	call	UnhandledExceptionFilter
 	mov	dword ptr [rsp + 0x44], eax
 	cmp	dword ptr [rsp + 0x44], 0
 	jne	0x140014038
@@ -2388,7 +2388,7 @@ sub_1400140b0:
 	mov	ecx, 0x68
 	rep stosb	byte ptr [rdi], al
 	lea	rcx, [rsp + 0x30]
-	call	qword ptr [rip + 0xbfab]
+	call	GetStartupInfoW
 	mov	eax, dword ptr [rsp + 0x6c]
 	and	eax, 1
 	test	eax, eax
@@ -2412,7 +2412,7 @@ sub_140014140:
 sub_140014150:
 	sub	rsp, 0x38
 	xor	ecx, ecx
-	call	qword ptr [rip + 0xbf1c]
+	call	GetModuleHandleW
 	mov	qword ptr [rsp + 0x20], rax
 	cmp	qword ptr [rsp + 0x20], 0
 	jne	0x140014170
@@ -2459,7 +2459,7 @@ sub_140014150:
 sub_140014220:
 	sub	rsp, 0x28
 	lea	rcx, [rip - 0x2fba]
-	call	qword ptr [rip + 0xbe8f]
+	call	SetUnhandledExceptionFilter
 	add	rsp, 0x28
 	ret	
 sub_140014240:
@@ -2514,7 +2514,7 @@ sub_140014310:
 	mov	rax, qword ptr [rbx]
 	test	rax, rax
 	je	0x14001433e
-	call	qword ptr [rip + 0xdce2]
+	call	5368848416
 	add	rbx, 8
 	cmp	rbx, rdi
 	jb	0x140014330
@@ -2534,7 +2534,7 @@ sub_140014370:
 	mov	rax, qword ptr [rbx]
 	test	rax, rax
 	je	0x14001439e
-	call	qword ptr [rip + 0xdc82]
+	call	5368848416
 	add	rbx, 8
 	cmp	rbx, rdi
 	jb	0x140014390
@@ -2610,7 +2610,7 @@ sub_140014490:
 	call	0x140011177
 	test	rax, rax
 	jne	0x1400145bd
-	call	qword ptr [rip + 0xbb3d]
+	call	GetLastError
 	cmp	eax, 0x57
 	jne	0x14001454d
 	xor	edx, edx
@@ -2625,7 +2625,7 @@ sub_140014490:
 	call	0x140011177
 	test	rax, rax
 	jne	0x1400145bd
-	call	qword ptr [rip + 0xbb04]
+	call	GetLastError
 	cmp	eax, 0x57
 	jne	0x1400145bb
 	mov	r8d, 0x104
@@ -2677,7 +2677,7 @@ sub_140014630:
 	mov	rdi, rax
 	test	rax, rax
 	jne	0x1400146c5
-	call	qword ptr [rip + 0xb9cd]
+	call	GetLastError
 	cmp	eax, 0x57
 	jne	0x140014744
 	xor	r8d, r8d
@@ -2689,19 +2689,19 @@ sub_140014630:
 	je	0x140014744
 	lea	rdx, [rip + 0x5e9c]
 	mov	rcx, rdi
-	call	qword ptr [rip + 0xb96b]
+	call	GetProcAddress
 	mov	rbx, rax
 	test	rax, rax
 	je	0x140014744
 	lea	rdx, [rip + 0x5e94]
 	mov	rcx, rdi
-	call	qword ptr [rip + 0xb953]
+	call	GetProcAddress
 	mov	rsi, rax
 	test	rax, rax
 	je	0x140014744
 	lea	rdx, [rip + 0x5e94]
 	mov	rcx, rdi
-	call	qword ptr [rip + 0xb93b]
+	call	GetProcAddress
 	mov	r14, rax
 	test	rax, rax
 	je	0x140014744
@@ -2712,11 +2712,11 @@ sub_140014630:
 	mov	rax, rbx
 	xor	r8d, r8d
 	mov	rcx, -0x7ffffffe
-	call	qword ptr [rip + 0xd8e9]
+	call	5368848416
 	test	eax, eax
 	je	0x140014772
 	mov	rcx, rdi
-	call	qword ptr [rip + 0xb904]
+	call	FreeLibrary
 	xor	eax, eax
 	mov	rcx, qword ptr [rbp + 0x160]
 	xor	rcx, rsp
@@ -2739,13 +2739,13 @@ sub_140014630:
 	lea	rdx, [rip + 0x5e91]
 	mov	rax, rsi
 	xor	r8d, r8d
-	call	qword ptr [rip + 0xd875]
+	call	5368848416
 	mov	rcx, qword ptr [rsp + 0x48]
 	mov	ebx, eax
 	mov	rax, r14
-	call	qword ptr [rip + 0xd865]
+	call	5368848416
 	mov	rcx, rdi
-	call	qword ptr [rip + 0xb884]
+	call	FreeLibrary
 	test	ebx, ebx
 	jne	0x140014744
 	cmp	dword ptr [rsp + 0x44], 1
@@ -2796,7 +2796,7 @@ sub_140014630:
 	mov	rbx, rax
 	test	rax, rax
 	jne	0x1400148d6
-	call	qword ptr [rip + 0xb7b2]
+	call	GetLastError
 	cmp	eax, 0x57
 	jne	0x1400148d6
 	xor	edx, edx
@@ -2881,7 +2881,7 @@ sub_140014ae0:
 	lea	rdx, [rbp - 0x19]
 	mov	r12, r9
 	lea	r8d, [r14 + 0x30]
-	call	qword ptr [rip + 0xb530]
+	call	VirtualQuery
 	test	rax, rax
 	je	0x140014e91
 	mov	r8d, dword ptr [rbp + 0x7f]
@@ -2937,7 +2937,7 @@ sub_140014ae0:
 	mov	rax, qword ptr [rip + 0x7cb3]
 	lea	rdx, [rip + 0x5a94]
 	mov	rcx, rax
-	call	qword ptr [rip + 0xb43b]
+	call	GetProcAddress
 	test	rax, rax
 	je	0x140014e91
 	lea	rcx, [rbp - 0x31]
@@ -2950,7 +2950,7 @@ sub_140014ae0:
 	xor	edx, edx
 	mov	qword ptr [rsp + 0x20], rcx
 	mov	rcx, qword ptr [rbp + 0x77]
-	call	qword ptr [rip + 0xd3e4]
+	call	5368848416
 	test	eax, eax
 	je	0x140014e91
 	mov	rcx, qword ptr [rbp - 0x31]
@@ -2958,7 +2958,7 @@ sub_140014ae0:
 	mov	qword ptr [rbp - 0x49], r14
 	mov	rax, qword ptr [rcx]
 	mov	rax, qword ptr [rax]
-	call	qword ptr [rip + 0xd3c5]
+	call	5368848416
 	cmp	eax, 0x1329141
 	jne	0x140014e7b
 	mov	rcx, qword ptr [rbp - 0x31]
@@ -2967,7 +2967,7 @@ sub_140014ae0:
 	xor	edx, edx
 	mov	rax, qword ptr [rcx]
 	mov	rax, qword ptr [rax + 0x38]
-	call	qword ptr [rip + 0xd39c]
+	call	5368848416
 	test	eax, eax
 	je	0x140014e7b
 	mov	rcx, qword ptr [rbp - 0x29]
@@ -2979,14 +2979,14 @@ sub_140014ae0:
 	mov	qword ptr [rsp + 0x20], r14
 	mov	rax, qword ptr [rcx]
 	mov	rax, qword ptr [rax + 0x40]
-	call	qword ptr [rip + 0xd36a]
+	call	5368848416
 	test	eax, eax
 	je	0x140014e6a
 	mov	rcx, qword ptr [rbp - 0x39]
 	lea	rdx, [rbp - 0x49]
 	mov	rax, qword ptr [rcx]
 	mov	rax, qword ptr [rax + 0xd0]
-	call	qword ptr [rip + 0xd34a]
+	call	5368848416
 	test	al, al
 	je	0x140014e56
 	mov	rcx, qword ptr [rbp - 0x49]
@@ -2994,7 +2994,7 @@ sub_140014ae0:
 	je	0x140014e56
 	mov	rax, qword ptr [rcx]
 	mov	rax, qword ptr [rax + 0x10]
-	call	qword ptr [rip + 0xd328]
+	call	5368848416
 	test	eax, eax
 	je	0x140014e32
 	mov	rcx, qword ptr [rbp - 0x49]
@@ -3008,7 +3008,7 @@ sub_140014ae0:
 	mov	qword ptr [rsp + 0x20], rdx
 	xor	edx, edx
 	mov	rax, qword ptr [rax + 0x18]
-	call	qword ptr [rip + 0xd2ee]
+	call	5368848416
 	test	al, al
 	je	0x140014e46
 	movzx	eax, word ptr [rbp + 0x57]
@@ -3023,7 +3023,7 @@ sub_140014ae0:
 	mov	rcx, qword ptr [rbp - 0x49]
 	mov	rax, qword ptr [rcx]
 	mov	rax, qword ptr [rax + 0x10]
-	call	qword ptr [rip + 0xd2bf]
+	call	5368848416
 	test	eax, eax
 	jne	0x140014d00
 	jmp	0x140014e32
@@ -3032,11 +3032,11 @@ sub_140014ae0:
 	je	0x140014e46
 	mov	ebx, eax
 	shl	rbx, 3
-	call	qword ptr [rip + 0xb2d7]
+	call	GetProcessHeap
 	mov	r8, rbx
 	xor	edx, edx
 	mov	rcx, rax
-	call	qword ptr [rip + 0xb2d9]
+	call	HeapAlloc
 	mov	rsi, rax
 	test	rax, rax
 	je	0x140014e46
@@ -3050,7 +3050,7 @@ sub_140014ae0:
 	mov	qword ptr [rsp + 0x28], rdx
 	lea	rdx, [rbp - 0x3d]
 	mov	qword ptr [rsp + 0x20], r14
-	call	qword ptr [rip + 0xd257]
+	call	5368848416
 	test	al, al
 	je	0x140014e32
 	sub	edi, dword ptr [rbp + 0x6f]
@@ -3080,30 +3080,30 @@ sub_140014ae0:
 	mov	rax, qword ptr [rcx]
 	mov	qword ptr [rsp + 0x20], r14
 	mov	rax, qword ptr [rax + 0xe0]
-	call	qword ptr [rip + 0xd1f4]
+	call	5368848416
 	test	al, al
 	cmovne	r14d, ebx
-	call	qword ptr [rip + 0xb220]
+	call	GetProcessHeap
 	mov	r8, rsi
 	xor	edx, edx
 	mov	rcx, rax
-	call	qword ptr [rip + 0xb21a]
+	call	HeapFree
 	mov	rcx, qword ptr [rbp - 0x49]
 	mov	rax, qword ptr [rcx]
 	mov	rax, qword ptr [rax]
-	call	qword ptr [rip + 0xd1ca]
+	call	5368848416
 	mov	rcx, qword ptr [rbp - 0x39]
 	mov	rax, qword ptr [rcx]
 	mov	rax, qword ptr [rax + 0x80]
-	call	qword ptr [rip + 0xd1b6]
+	call	5368848416
 	mov	rcx, qword ptr [rbp - 0x29]
 	mov	rdx, qword ptr [rcx]
 	mov	rax, qword ptr [rdx + 0x70]
-	call	qword ptr [rip + 0xd1a5]
+	call	5368848416
 	mov	rcx, qword ptr [rbp - 0x31]
 	mov	rdx, qword ptr [rcx]
 	mov	rax, qword ptr [rdx + 0x58]
-	call	qword ptr [rip + 0xd194]
+	call	5368848416
 	mov	eax, r14d
 	jmp	0x140014e93
 	xor	eax, eax
