@@ -186,13 +186,16 @@ class CFGBuilder:
                     print(f"Do Inlining for {name}->{callee.name()}")
                     inlinee.update({callee.name():callee})
 
-            print(inlinee)
             def inline_expansion(block: asm2vec.asm.BasicBlock) -> None:
                 for idx, instr in enumerate(block):
                     if is_call(instr.op()) and instr.args()[0] in inlinee.keys():
                         block.inline(idx, inlinee[instr.args()[0]])
-                
+
             asm2vec.asm.walk_cfg(f.entry(), inline_expansion)
+            print(f"[{name}]")
+            for insn in f.instructions():
+                print(f"{insn.op()} {', '.join(insn.args())}")
+            print()
 
         return list(funcs.values())
 
