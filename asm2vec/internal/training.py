@@ -20,7 +20,8 @@ class Asm2VecParams:
     def __init__(self, **kwargs):
         self.d: int = kwargs.get('d', 200)
         self.initial_alpha: float = kwargs.get('alpha', 0.0025)
-        self.alpha_update_interval: int = kwargs.get('alpha_update_interval', 10000)
+        self.alpha_update_interval: int = kwargs.get(
+            'alpha_update_interval', 10000)
         self.num_of_rnd_walks: int = kwargs.get('rnd_walks', 3)
         self.neg_samples: int = kwargs.get('neg_samples', 25)
         self.iteration: int = kwargs.get('iteration', 1)
@@ -40,7 +41,8 @@ class Asm2VecParams:
     def populate(self, rep: Dict[bytes, Any]) -> None:
         self.d: int = rep.get(b'd', 200)
         self.initial_alpha: float = rep.get(b'alpha', 0.0025)
-        self.alpha_update_interval: int = rep.get(b'alpha_update_interval', 10000)
+        self.alpha_update_interval: int = rep.get(
+            b'alpha_update_interval', 10000)
         self.num_of_rnd_walks: int = rep.get(b'rnd_walks', 3)
         self.neg_samples: int = rep.get(b'neg_samples', 25)
         self.iteration: int = rep.get(b'iteration', 1)
@@ -142,7 +144,8 @@ class TrainingContext:
         self._repo = repo
         self._params = params
         self._alpha = params.initial_alpha
-        self._sampler = NegativeSampler(list(map(lambda t: (t, t.frequency), repo.vocab().values())))
+        self._sampler = NegativeSampler(
+            list(map(lambda t: (t, t.frequency), repo.vocab().values())))
         self._is_estimating = is_estimating
         self._counters = dict()
         self._lock = threading.Lock()
@@ -216,7 +219,8 @@ def _train_vectorized(wnd: SequenceWindow, f: VectorizedFunction, context: Train
     for tk in tokens:
         # Negative sampling.
         sampled_tokens: Dict[str, VectorizedToken] = \
-            dict(map(lambda x: (x.name(), x.vectorized()), context.sampler().sample(context.params().neg_samples)))
+            dict(map(lambda x: (x.name(), x.vectorized()),
+                     context.sampler().sample(context.params().neg_samples)))
         if tk.name() not in sampled_tokens:
             sampled_tokens[tk.name()] = tk
 
@@ -231,7 +235,8 @@ def _train_vectorized(wnd: SequenceWindow, f: VectorizedFunction, context: Train
 
         for sp_tk in sampled_tokens.values():
             # Accumulate gradient for function vector.
-            g = (_identity(tk is sp_tk) - _dot_sigmoid(delta, tk.v_pred)) * context.alpha()
+            g = (_identity(tk is sp_tk) -
+                 _dot_sigmoid(delta, tk.v_pred)) * context.alpha()
             f_grad += g / 3 * tk.v_pred
 
             if not context.is_estimating():
@@ -283,12 +288,14 @@ def train(repository: FunctionRepository, params: Asm2VecParams) -> None:
         with progress.lock() as prog_proxy:
             prog_proxy.set(prog_proxy.value() + 1)
 
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=context.params().jobs)
+    executor = concurrent.futures.ThreadPoolExecutor(
+        max_workers=context.params().jobs)
     futures = []
     for f in context.repo().funcs():
         futures.append(executor.submit(train_function, f))
 
-    done, not_done = concurrent.futures.wait(futures, return_when=concurrent.futures.FIRST_EXCEPTION)
+    done, not_done = concurrent.futures.wait(
+        futures, return_when=concurrent.futures.FIRST_EXCEPTION)
     if len(not_done) > 0:
         raise RuntimeError('Train failed due to one or more failed task.')
 

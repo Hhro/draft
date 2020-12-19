@@ -186,8 +186,7 @@ class PE(Binary):
 
 
 if __name__ == "__main__":
-    x = PE(Binary(Path("../dataset/malware/VirusShare_4c8401f098965da00884231dd3460eb8")))
-    #x = PE(Binary(Path("tests/pe.exe")))
+    x = PE(Binary(Path("tests/pe.exe")))
     x.parse_iat()
-    x.disassemble(output=Path("tests/VirusShare_4c8401f098965da00884231dd3460eb8.s"))
-    x.dump()
+    x.disassemble(output=Path("tests/pe.s"))
+    # x.dump()

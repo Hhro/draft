@@ -13,7 +13,8 @@ class AssemblySyntaxError(Exception):
 
 
 def raise_asm_syntax_error(expect: str, found: str) -> None:
-    raise AssemblySyntaxError('Expect "{}", but "{}" was found.'.format(expect, found))
+    raise AssemblySyntaxError(
+        'Expect "{}", but "{}" was found.'.format(expect, found))
 
 
 jmp_op = {
@@ -101,7 +102,8 @@ class CFGBuilder:
 
     def _add_jmp(self, op: str, args: List[str]) -> None:
         if len(args) != 1:
-            raise_asm_syntax_error('Jump with single operand', '{} operands'.format(len(args)))
+            raise_asm_syntax_error(
+                'Jump with single operand', '{} operands'.format(len(args)))
         cur_block = self._get_active_block()
         self._close_active_block()
         if is_conditional_jmp(op):
@@ -134,7 +136,8 @@ class CFGBuilder:
                 self._block_labels[label] = block_id
                 # Link the new block with the previously-active block.
                 if self._has_active_block():
-                    self._get_active_block().add_successor(self._blocks[block_id])
+                    self._get_active_block().add_successor(
+                        self._blocks[block_id])
                 self._set_active_block(block_id)
         else:
             self._set_active_block(block_id)
@@ -148,7 +151,8 @@ class CFGBuilder:
                 if is_jmp(inst.op()):
                     target = inst.args()[0]
                     if target in self._block_labels:
-                        blk.add_successor(self._blocks[self._block_labels[target]])
+                        blk.add_successor(
+                            self._blocks[self._block_labels[target]])
                 elif is_call(inst.op()):
                     target = inst.args()[0]
                     if target in self._block_labels and target not in func_entries:
@@ -162,7 +166,8 @@ class CFGBuilder:
                 func_entries[func_name] = self._block_labels[func_name]
 
         funcs: Dict[str, asm2vec.asm.Function] = \
-            dict(map(lambda x: (x[0], asm2vec.asm.Function(self._blocks[x[1]], x[0])), func_entries.items()))
+            dict(map(lambda x: (x[0], asm2vec.asm.Function(
+                self._blocks[x[1]], x[0])), func_entries.items()))
 
         # Fix function call relation.
         for (name, f) in funcs.items():
@@ -184,7 +189,7 @@ class CFGBuilder:
 
                 if alpha > 0.01 and (delta < 0.6 or len(callee) < 10):
                     print(f"Do Inlining for {name}->{callee.name()}")
-                    inlinee.update({callee.name():callee})
+                    inlinee.update({callee.name(): callee})
 
             def inline_expansion(block: asm2vec.asm.BasicBlock) -> None:
                 for idx, instr in enumerate(block):
@@ -192,10 +197,6 @@ class CFGBuilder:
                         block.inline(idx, inlinee[instr.args()[0]])
 
             asm2vec.asm.walk_cfg(f.entry(), inline_expansion)
-            print(f"[{name}]")
-            for insn in f.instructions():
-                print(f"{insn.op()} {', '.join(insn.args())}")
-            print()
 
         return list(funcs.values())
 
@@ -274,7 +275,8 @@ def parse_asm_instr(ln: str, context: ParseContext) -> None:
         op = ln
     else:
         op = ln[:delim_index]
-        args = list(map(lambda arg: arg.strip(), ln[delim_index + 1:].split(',')))
+        args = list(map(lambda arg: arg.strip(),
+                        ln[delim_index + 1:].split(',')))
 
     context.builder().add_instr(op, args)
 

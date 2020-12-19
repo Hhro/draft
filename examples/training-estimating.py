@@ -6,6 +6,7 @@ import asm2vec.model
 
 import sys
 
+
 def cosine_similarity(v1, v2):
     return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
 
@@ -25,18 +26,22 @@ def main(train, estm):
     print('Training complete.')
 
     for tf in training_repo.funcs():
-        print('Norm of trained function "{}" = {}'.format(tf.sequential().name(), np.linalg.norm(tf.v)))
+        print('Norm of trained function "{}" = {}'.format(
+            tf.sequential().name(), np.linalg.norm(tf.v)))
 
-    estimating_funcs_vec = list(map(lambda f: model.to_vec(f), estimating_funcs))
+    estimating_funcs_vec = list(
+        map(lambda f: model.to_vec(f), estimating_funcs))
     print('Estimating complete.')
 
     for (ef, efv) in zip(estimating_funcs, estimating_funcs_vec):
-        print('Norm of trained function "{}" = {}'.format(ef.name(), np.linalg.norm(efv)))
+        print('Norm of trained function "{}" = {}'.format(
+            ef.name(), np.linalg.norm(efv)))
 
     for tf in training_repo.funcs():
         for (ef, efv) in zip(estimating_funcs, estimating_funcs_vec):
             sim = cosine_similarity(tf.v, efv)
-            print('sim("{}", "{}") = {}'.format(tf.sequential().name(), ef.name(), sim))
+            print('sim("{}", "{}") = {}'.format(
+                tf.sequential().name(), ef.name(), sim))
 
 
 if __name__ == '__main__':

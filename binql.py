@@ -2,6 +2,7 @@ import glob
 import argparse
 import platform
 
+import json
 import logger
 import numpy as np
 import binlib
@@ -38,25 +39,29 @@ if __name__ == '__main__':
 
         if not target_path.exists():
             raise Exception(f"File not found: {str(target_path)}")
-        targets = [Path(args.target).resolve()]
+        targets = [Path(args.target)]
 
     elif args.targets:
-        targets_dir = Path(args.targets).resolve()
+        target_path = Path(args.targets).resolve()
 
-        if not targets_dir.exists():
-            raise Exception(f"Directory not found: {str(targets_dir)}")
-        targets = [Path(f).resolve() for f in glob.glob(args.targets+"/*")]
+        if not target_path.exists():
+            raise Exception(f"Directory not found: {str(target_path)}")
+        targets = [Path(f) for f in glob.glob(args.targets+"/*.S")]
 
-    # Directory of function repository
-    train_dir = Path(args.train).resolve()
-    os = platform.system()
-    if not train_dir.exists():
-        raise Exception(f"Directory not found: {str(train_dir)}")
+    # Collect train functions
+    train_path = Path(args.train).resolve()
+    trainees = [Path(f) for f in glob.glob(args.train+"/*.S")]
 
     # Disassemble all binaries in training_dir
-    DANGER_FUNCTIONS = [""]
-    
-    
+    tifs = ["OpenProcess", "VirtualAlloc", "CreateRemoteThread", "AdjustTokenPrivileges",
+            "EnumProcessModules", "GetMessage", "ShowWindow", "FindWindow", "GetForegroundWindow", "GetAsyncKeyState",
+            "OpenFIle", "FindFirstFileA", "ReadFile", "inet_addr", "InternetOpen", "InternetOpenUrl", "InternetReadUrl",
+            "SetWindowsHookEx", "WinExec", "VirtualProtect", "ShellExecute"]
 
-    
-    
+    with open(train_path/"xref.json", "r") as train_xref_in:
+        train_xref = json.load(train_xref_in)
+
+    with open(target_path/"xref.json", "r") as target_xref_in:
+        target_xref = json.load(target_xref_in)
+
+    clonelib.train(trainees, targets, train_xref, target_xref, tifs)
